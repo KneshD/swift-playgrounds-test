@@ -152,7 +152,7 @@ public struct WelcomeView: View {
     @StateObject private var recorder = PolishSpeechRecorder()
     @State private var draft = ""
     @State private var task = false
-    @State private var error = false
+    @State private var showSaveError = false
 
     public init() {}
 
@@ -165,7 +165,7 @@ public struct WelcomeView: View {
             stored = try JSONEncoder().encode(entries)
             return true
         } catch {
-            error = true
+            showSaveError = true
             return false
         }
     }
@@ -271,7 +271,7 @@ public struct WelcomeView: View {
                 }
             }
             .navigationTitle("Mój notatnik")
-            .alert("Nie udało się zapisać wpisów.", isPresented: $error) {
+            .alert("Nie udało się zapisać wpisów.", isPresented: $showSaveError) {
                 Button("OK") {}
             }
         }
