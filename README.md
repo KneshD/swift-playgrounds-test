@@ -69,3 +69,10 @@ Na GitHubie wybierz widoczność `Private`.
 - Na iPadzie trzeba sprawdzić kompilację, dodanie zależności, działanie przycisku oraz aktualizację po pushu.
 
 Apple przewiduje dodawanie zależności Swift Package w Swift Playgrounds, ale dostępność nazw poleceń i obsługa prywatnych repozytoriów mogą zależeć od wersji aplikacji. Przed wdrożeniem sprawdź aktualny przewodnik Apple „Add a Swift package to your app” dla Swift Playgrounds oraz wersję iPadOS/Swift Playgrounds używaną na urządzeniu.
+
+
+## Wersja 1.2.0
+
+Pakiet zawiera lokalne nagrywanie i polską transkrypcję przez Apple Speech. Aplikacja wymaga zgody na mikrofon i rozpoznawanie mowy. W Swift Playgrounds zaakceptuj oba komunikaty systemowe przy pierwszym użyciu przycisku „Nagraj po polsku”.
+
+Transkrypcja wymusza tryb lokalny i używa locale `pl-PL`. iPad musi mieć dostępny i pobrany polski model mowy. Dźwięk nie jest zapisywany ani wysyłany do usługi sieciowej. Po zatrzymaniu nagrania wybierz „Wstaw transkrypcję”, a następnie zapisz tekst jako notatkę lub zadanie.
