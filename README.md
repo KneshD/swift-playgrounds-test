@@ -76,3 +76,8 @@ Apple przewiduje dodawanie zależności Swift Package w Swift Playgrounds, ale d
 Pakiet zawiera lokalne nagrywanie i polską transkrypcję przez Apple Speech. Aplikacja wymaga zgody na mikrofon i rozpoznawanie mowy. W Swift Playgrounds zaakceptuj oba komunikaty systemowe przy pierwszym użyciu przycisku „Nagraj po polsku”.
 
 Transkrypcja wymusza tryb lokalny i używa locale `pl-PL`. iPad musi mieć dostępny i pobrany polski model mowy. Dźwięk nie jest zapisywany ani wysyłany do usługi sieciowej. Po zatrzymaniu nagrania wybierz „Wstaw transkrypcję”, a następnie zapisz tekst jako notatkę lub zadanie.
+
+
+## Wersja 1.3.0
+
+Wersja 1.3.0 zapisuje również nagranie głosowe lokalnie w katalogu dokumentów aplikacji jako plik `.caf`. Transkrypcja nadal działa lokalnie z użyciem polskiego rozpoznawania mowy Apple. Żadne nagranie ani tekst nie są wysyłane do sieci. Wpisy zapisane w starszych wersjach pozostają kompatybilne.
