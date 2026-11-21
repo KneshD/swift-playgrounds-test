@@ -259,6 +259,7 @@ public struct WelcomeView: View {
                         )
                         if save(items) {
                             draft = ""
+                            recorder.lastRecordingFileName = nil
                         }
                     }
                     .disabled(text.isEmpty || entries == nil)
