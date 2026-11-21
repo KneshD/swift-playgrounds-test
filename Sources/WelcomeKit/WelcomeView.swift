@@ -9,6 +9,7 @@ private struct Entry: Identifiable, Codable {
     let task: Bool
     let due: Date?
     var done: Bool
+    let audioFileName: String?
 }
 
 private func suggestedDate(_ text: String) -> Date? {
@@ -41,11 +42,14 @@ private final class PolishSpeechRecorder: NSObject, ObservableObject, SFSpeechRe
     @Published var isRecording = false
     @Published var transcript = ""
     @Published var status = "Gotowe do nagrania"
+    @Published var lastRecordingFileName: String?
 
     private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "pl-PL"))
     private let audioEngine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var audioFile: AVAudioFile?
+    private var audioFileURL: URL?
 
     override init() {
         super.init()
@@ -62,6 +66,7 @@ private final class PolishSpeechRecorder: NSObject, ObservableObject, SFSpeechRe
 
     private func start() {
         transcript = ""
+        lastRecordingFileName = nil
         status = "Proszę mówić po polsku…"
 
         SFSpeechRecognizer.requestAuthorization { [weak self] authorization in
@@ -106,9 +111,24 @@ private final class PolishSpeechRecorder: NSObject, ObservableObject, SFSpeechRe
             request.requiresOnDeviceRecognition = true
 
             let inputNode = audioEngine.inputNode
+            let inputFormat = inputNode.outputFormat(forBus: 0)
+            let recordingsDirectory = FileManager.default.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            )[0]
+            let recordingURL = recordingsDirectory.appendingPathComponent(
+                "nagranie-\(UUID().uuidString).caf"
+            )
+
+            audioFile = try AVAudioFile(forWriting: recordingURL, settings: inputFormat.settings)
+            audioFileURL = recordingURL
+
             inputNode.removeTap(onBus: 0)
-            inputNode.installTap(onBus: 0, bufferSize: 1_024, format: inputNode.outputFormat(forBus: 0)) { [weak self] buffer, _ in
+            inputNode.installTap(onBus: 0, bufferSize: 1_024, format: inputFormat) { [weak self] buffer, _ in
                 self?.request?.append(buffer)
+                if let audioFile = self?.audioFile {
+                    try? audioFile.write(from: buffer)
+                }
             }
 
             recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
@@ -139,6 +159,9 @@ private final class PolishSpeechRecorder: NSObject, ObservableObject, SFSpeechRe
         audioEngine.inputNode.removeTap(onBus: 0)
         request?.endAudio()
         recognitionTask?.finish()
+        lastRecordingFileName = audioFileURL?.lastPathComponent
+        audioFile = nil
+        audioFileURL = nil
         recognitionTask = nil
         request = nil
         isRecording = false
@@ -215,10 +238,23 @@ public struct WelcomeView: View {
                         Text("Termin: \(due.formatted(date: .abbreviated, time: .shortened))")
                     }
 
+                    if recorder.lastRecordingFileName != nil {
+                        Label("Nagranie zapisane lokalnie", systemImage: "waveform")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
                     Button("Zapisz") {
                         guard var items = entries else { return }
                         items.insert(
-                            Entry(id: UUID(), text: text, task: task, due: due, done: false),
+                            Entry(
+                                id: UUID(),
+                                text: text,
+                                task: task,
+                                due: due,
+                                done: false,
+                                audioFileName: recorder.lastRecordingFileName
+                            ),
                             at: 0
                         )
                         if save(items) {
@@ -261,6 +297,12 @@ public struct WelcomeView: View {
                                     if let due = item.due {
                                         Text(due.formatted(date: .abbreviated, time: .shortened))
                                             .font(.caption)
+                                    }
+
+                                    if item.audioFileName != nil {
+                                        Label("Nagranie lokalne", systemImage: "waveform")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
                                     }
                                 }
                             }
